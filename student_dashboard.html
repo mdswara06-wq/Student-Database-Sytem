@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>My Dashboard — Student</title>
+<style>
+  *{margin:0;padding:0;box-sizing:border-box}
+  body{font-family:'Segoe UI',sans-serif;background:#f0f2f5}
+  nav{background:linear-gradient(135deg,#059669,#065f46);color:#fff;padding:0 30px;display:flex;justify-content:space-between;align-items:center;height:60px;box-shadow:0 2px 10px rgba(0,0,0,.2)}
+  .nav-brand{font-size:17px;font-weight:700}
+  .nav-links{display:flex;gap:5px}
+  .nav-links a{color:rgba(255,255,255,.8);text-decoration:none;padding:7px 14px;border-radius:6px;font-size:13px;transition:all .2s}
+  .nav-links a:hover,.nav-links a.active{background:rgba(255,255,255,.15);color:#fff}
+  .nav-right{display:flex;align-items:center;gap:12px}
+  .nav-right span{font-size:13px;opacity:.85}
+  .logout{background:#e94560 !important;color:#fff !important;padding:7px 16px;border-radius:6px;text-decoration:none;font-size:13px;font-weight:600}
+  .container{max-width:1100px;margin:30px auto;padding:0 20px}
+  .view-only-banner{background:linear-gradient(135deg,#059669,#047857);color:#fff;padding:14px 20px;border-radius:12px;margin-bottom:25px;display:flex;align-items:center;gap:12px;font-size:14px}
+  .view-only-banner strong{font-size:15px}
+  .profile-card{background:#fff;border-radius:16px;box-shadow:0 2px 15px rgba(0,0,0,.08);overflow:hidden;margin-bottom:25px}
+  .profile-header{background:linear-gradient(135deg,#059669,#047857);padding:30px;display:flex;align-items:center;gap:25px}
+  .photo-circle{width:90px;height:90px;border-radius:50%;border:4px solid rgba(255,255,255,.4);overflow:hidden;background:rgba(255,255,255,.2);display:flex;align-items:center;justify-content:center;font-size:36px;flex-shrink:0}
+  .photo-circle img{width:100%;height:100%;object-fit:cover}
+  .profile-header-info h2{font-size:26px;font-weight:800;color:#fff;margin-bottom:4px}
+  .profile-header-info p{color:rgba(255,255,255,.75);font-size:14px}
+  .profile-body{padding:25px;display:grid;grid-template-columns:repeat(3,1fr);gap:20px}
+  .info-item label{font-size:11px;text-transform:uppercase;letter-spacing:.8px;color:#999;font-weight:600;display:block;margin-bottom:5px}
+  .info-item span{font-size:15px;color:#1a1a2e;font-weight:500}
+  .section-title{font-size:18px;font-weight:700;color:#1a1a2e;margin-bottom:15px}
+  .courses-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:16px;margin-bottom:30px}
+  .course-card{background:#fff;border-radius:12px;padding:20px;box-shadow:0 2px 10px rgba(0,0,0,.07);border-left:4px solid #059669}
+  .course-card h3{font-size:15px;font-weight:700;color:#1a1a2e;margin-bottom:8px}
+  .course-card .meta{display:flex;gap:10px;flex-wrap:wrap;margin-top:10px}
+  .badge{padding:3px 10px;border-radius:20px;font-size:12px;font-weight:600;display:inline-block}
+  .badge-grade-A{background:#d1fae5;color:#065f46}
+  .badge-grade-B{background:#dbeafe;color:#1e40af}
+  .badge-grade-C{background:#fef3c7;color:#92400e}
+  .badge-grade-D,.badge-grade-F{background:#fee2e2;color:#991b1b}
+  .badge-credits{background:#f3e8ff;color:#6b21a8}
+  .badge-sem{background:#e0f2fe;color:#075985}
+  .badge-date{background:#f1f5f9;color:#475569}
+  .attend-card{background:#fff;border-radius:16px;box-shadow:0 2px 15px rgba(0,0,0,.08);overflow:hidden;margin-bottom:30px}
+  .attend-header{background:linear-gradient(135deg,#0f3460,#1a5fa8);padding:16px 22px;color:#fff;font-size:15px;font-weight:700}
+  .attend-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:16px;padding:22px}
+  .attend-item{border-radius:12px;padding:18px;border:1px solid #e2e8f0}
+  .attend-item h4{font-size:13px;font-weight:700;color:#1a1a2e;margin-bottom:10px}
+  .attend-bar-wrap{background:#f1f5f9;border-radius:20px;height:8px;margin-bottom:8px}
+  .attend-bar{height:8px;border-radius:20px}
+  .attend-pct{font-size:24px;font-weight:800}
+  .attend-sub{font-size:12px;color:#64748b;margin-top:3px}
+  .pct-high{color:#059669} .bar-high{background:#059669}
+  .pct-med{color:#f59e0b}  .bar-med{background:#f59e0b}
+  .pct-low{color:#e94560}  .bar-low{background:#e94560}
+</style>
+</head>
+<body>
+<nav>
+  <span class="nav-brand">🎓 Student Portal</span>
+  <div class="nav-links">
+    <a href="/dashboard" class="active">🏠 My Profile</a>
+    <a href="/attendance">📅 Attendance</a>
+  </div>
+  <div class="nav-right">
+    <span>👤 {{ session['user'] }}</span>
+    <a href="/logout" class="logout">🚪 Logout</a>
+  </div>
+</nav>
+<div class="container">
+  <div class="view-only-banner">
+    <span style="font-size:20px">👁</span>
+    <div><strong>View Only Access</strong> — You can view your personal information, grades and attendance. Contact admin or faculty for any changes.</div>
+  </div>
+  {% if student %}
+  <div class="profile-card">
+    <div class="profile-header">
+      <div class="photo-circle">
+        {% if student[7] %}<img src="/static/uploads/{{ student[7] }}" alt="Photo">
+        {% else %}👨‍🎓{% endif %}
+      </div>
+      <div class="profile-header-info">
+        <h2>{{ student[1] }} {{ student[2] }}</h2>
+        <p>Student ID: {{ student[0] }} &nbsp;•&nbsp; {{ student[6] }}</p>
+      </div>
+    </div>
+    <div class="profile-body">
+      <div class="info-item"><label>Email</label><span>{{ student[3] }}</span></div>
+      <div class="info-item"><label>Phone</label><span>{{ student[4] }}</span></div>
+      <div class="info-item"><label>Faculty Advisor</label><span>{{ student[5] }}</span></div>
+      <div class="info-item"><label>Department</label><span>{{ student[6] }}</span></div>
+      <div class="info-item"><label>Date of Birth</label><span>{{ student[8] or 'Not set' }}</span></div>
+      <div class="info-item"><label>Portal Role</label><span style="color:#059669;font-weight:700">Student</span></div>
+    </div>
+  </div>
+  <div class="section-title">📚 My Enrolled Courses & Grades</div>
+  <div class="courses-grid">
+    {% for e in enrollments %}
+    <div class="course-card">
+      <h3>{{ e[0] }}</h3>
+      <div class="meta">
+        <span class="badge badge-grade-{{ e[3] }}">Grade: {{ e[3] or 'N/A' }}</span>
+        <span class="badge badge-credits">{{ e[1] }} Credits</span>
+        <span class="badge badge-sem">{{ e[2] }}</span>
+        <span class="badge badge-date">{{ e[4] }}</span>
+      </div>
+    </div>
+    {% else %}
+    <p style="color:#999">No enrollments found.</p>
+    {% endfor %}
+  </div>
+  <div class="attend-card">
+    <div class="attend-header">📅 My Attendance Summary</div>
+    <div class="attend-grid">
+      {% for a in attendance %}
+        {% set pct = a[3] %}
+        {% if pct >= 75 %}{% set cls = 'high' %}{% elif pct >= 50 %}{% set cls = 'med' %}{% else %}{% set cls = 'low' %}{% endif %}
+        <div class="attend-item">
+          <h4>{{ a[0] }}</h4>
+          <div class="attend-bar-wrap">
+            <div class="attend-bar bar-{{ cls }}" style="width:{{ pct }}%"></div>
+          </div>
+          <div class="attend-pct pct-{{ cls }}">{{ pct }}%</div>
+          <div class="attend-sub">{{ a[2] }} Present / {{ a[1] }} Total Classes</div>
+        </div>
+      {% else %}
+        <p style="color:#999;grid-column:1/-1;text-align:center;padding:20px">No attendance records found.</p>
+      {% endfor %}
+    </div>
+  </div>
+  {% endif %}
+</div>
+</body>
+</html>

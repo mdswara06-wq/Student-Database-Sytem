@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Reports - Student DB</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Segoe UI', Arial, sans-serif; background: #f0f2f5; }
+        nav {
+            background: linear-gradient(135deg, #0f3460, #16213e);
+            color: white; padding: 0 30px;
+            display: flex; justify-content: space-between; align-items: center;
+            height: 60px;
+        }
+        .nav-brand { font-size: 18px; font-weight: 700; }
+        .nav-links a { color: white; text-decoration: none; margin-left: 5px; padding: 8px 14px; border-radius: 6px; font-size: 13px; }
+        .nav-links a:hover { background: rgba(255,255,255,0.15); }
+        .nav-links a.logout { background: #e94560; }
+        .container { max-width: 1300px; margin: 30px auto; padding: 0 20px; }
+        h2 { color: #1a1a2e; margin-bottom: 20px; font-size: 22px; }
+        h3 { color: #0f3460; margin-bottom: 15px; font-size: 16px; }
+
+        /* AGGREGATE CARDS */
+        .agg-grid {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 14px; margin-bottom: 30px;
+        }
+        .agg-card {
+            background: white; padding: 18px 12px;
+            border-radius: 10px; text-align: center;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+            border-top: 3px solid #0f3460;
+        }
+        .agg-card .val { font-size: 28px; font-weight: 800; color: #0f3460; }
+        .agg-card .lbl { font-size: 11px; color: #777; margin-top: 4px; }
+
+        /* SECTION CARDS */
+        .section-card {
+            background: white; border-radius: 12px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.08);
+            overflow: hidden; margin-bottom: 25px;
+        }
+        .section-header {
+            background: #f8f9ff; padding: 15px 20px;
+            border-bottom: 1px solid #eee;
+        }
+        table { width: 100%; border-collapse: collapse; }
+        th { background: #0f3460; color: white; padding: 12px 15px; text-align: left; font-size: 13px; }
+        td { padding: 10px 15px; border-bottom: 1px solid #f0f0f0; font-size: 13px; }
+        tr:last-child td { border-bottom: none; }
+        tr:hover td { background: #f8f9ff; }
+
+        .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 25px; }
+
+        .audit-badge {
+            display: inline-block; padding: 3px 10px; border-radius: 12px;
+            font-size: 11px; font-weight: 700;
+        }
+        .badge-INSERT { background: #e6ffe6; color: #006600; }
+        .badge-UPDATE { background: #e6f0ff; color: #003399; }
+        .badge-DELETE { background: #ffe6e6; color: #cc0000; }
+    </style>
+</head>
+<body>
+    <nav>
+        <span class="nav-brand">🎓 Student Database Management</span>
+        <div class="nav-links">
+            <a href="/dashboard">🏠 Home</a>
+            <a href="/students">👨‍🎓 Students</a>
+            <a href="/faculty">👨‍🏫 Faculty</a>
+            <a href="/courses">📚 Courses</a>
+            <a href="/departments">🏢 Departments</a>
+            <a href="/enrollments">📋 Enrollments</a>
+            <a href="/reports">📊 Reports</a>
+            <a href="/logout" class="logout">🚪 Logout</a>
+        </div>
+    </nav>
+
+    <div class="container">
+        <h2>📊 Reports & Analytics</h2>
+
+        <!-- AGGREGATE FUNCTIONS DISPLAY -->
+        <h3>Aggregate Functions (COUNT, AVG, MAX, MIN, SUM)</h3>
+        <div class="agg-grid">
+            <div class="agg-card">
+                <div class="val">{{ total_students }}</div>
+                <div class="lbl">COUNT Students</div>
+            </div>
+            <div class="agg-card">
+                <div class="val">{{ total_faculty }}</div>
+                <div class="lbl">COUNT Faculty</div>
+            </div>
+            <div class="agg-card">
+                <div class="val">{{ total_courses }}</div>
+                <div class="lbl">COUNT Courses</div>
+            </div>
+            <div class="agg-card">
+                <div class="val">{{ avg_credits }}</div>
+                <div class="lbl">AVG Credits</div>
+            </div>
+            <div class="agg-card">
+                <div class="val">{{ max_credits }}</div>
+                <div class="lbl">MAX Credits</div>
+            </div>
+            <div class="agg-card">
+                <div class="val">{{ min_credits }}</div>
+                <div class="lbl">MIN Credits</div>
+            </div>
+            <div class="agg-card">
+                <div class="val">{{ sum_credits }}</div>
+                <div class="lbl">SUM Credits</div>
+            </div>
+        </div>
+
+        <!-- TWO COLUMN REPORTS -->
+        <div class="two-col">
+            <!-- Department Report (from VIEW) -->
+            <div class="section-card">
+                <div class="section-header">
+                    <h3>🏢 Department Report (via View)</h3>
+                </div>
+                <table>
+                    <thead>
+                        <tr><th>Department</th><th>Faculty</th><th>Students</th></tr>
+                    </thead>
+                    <tbody>
+                        {% for row in dept_report %}
+                        <tr>
+                            <td>{{ row[0] }}</td>
+                            <td>{{ row[1] }}</td>
+                            <td>{{ row[2] }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Course Enrollment (from VIEW) -->
+            <div class="section-card">
+                <div class="section-header">
+                    <h3>📚 Course Enrollments (via View)</h3>
+                </div>
+                <table>
+                    <thead>
+                        <tr><th>Code</th><th>Course Name</th><th>Credits</th><th>Enrolled</th></tr>
+                    </thead>
+                    <tbody>
+                        {% for row in course_report %}
+                        <tr>
+                            <td>{{ row[0] }}</td>
+                            <td>{{ row[1] }}</td>
+                            <td>{{ row[2] }}</td>
+                            <td>{{ row[3] }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Full Student Details (from VIEW) -->
+        <div class="section-card" style="margin-bottom: 25px;">
+            <div class="section-header">
+                <h3>👨‍🎓 All Student Details (via vw_Student_Details View)</h3>
+            </div>
+            <table>
+                <thead>
+                    <tr><th>ID</th><th>Full Name</th><th>Email</th><th>Phone</th><th>Faculty</th><th>Department</th></tr>
+                </thead>
+                <tbody>
+                    {% for row in student_view %}
+                    <tr>
+                        <td>{{ row[0] }}</td>
+                        <td>{{ row[1] }}</td>
+                        <td>{{ row[2] }}</td>
+                        <td>{{ row[3] }}</td>
+                        <td>{{ row[4] }}</td>
+                        <td>{{ row[5] }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Audit Log (Trigger outputs) -->
+        <div class="section-card">
+            <div class="section-header">
+                <h3>🔍 Audit Log (Trigger Records)</h3>
+            </div>
+            <table>
+                <thead>
+                    <tr><th>Log ID</th><th>Action</th><th>Table</th><th>Date & Time</th><th>User</th></tr>
+                </thead>
+                <tbody>
+                    {% for row in audit_data %}
+                    <tr>
+                        <td>{{ row[0] }}</td>
+                        <td><span class="audit-badge badge-{{ row[1] }}">{{ row[1] }}</span></td>
+                        <td>{{ row[2] }}</td>
+                        <td>{{ row[3] }}</td>
+                        <td>{{ row[4] }}</td>
+                    </tr>
+                    {% endfor %}
+                    {% if not audit_data %}
+                    <tr><td colspan="5" style="text-align:center; color:#999; padding: 20px;">
+                        No audit records yet. Make some changes to see logs here.
+                    </td></tr>
+                    {% endif %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</body>
+</html>

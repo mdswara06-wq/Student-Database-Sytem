@@ -1,0 +1,312 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Update Grades</title>
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+  :root {
+    --purple: #7c3aed;
+    --purple-light: #a855f7;
+    --bg: #0c0d14;
+    --surface: #13141f;
+    --surface2: #1a1b2e;
+    --border: rgba(124,58,237,0.15);
+    --text: #e2e8f0;
+    --muted: #64748b;
+    --accent: #e94560;
+    --green: #059669;
+    --blue: #3b82f6;
+  }
+
+  body { font-family: 'Outfit', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; }
+
+  /* NAV */
+  nav {
+    background: rgba(19,20,31,0.95);
+    backdrop-filter: blur(20px);
+    border-bottom: 1px solid var(--border);
+    padding: 0 32px;
+    height: 64px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    position: sticky; top: 0; z-index: 100;
+  }
+  .nav-brand {
+    font-size: 17px; font-weight: 800;
+    background: linear-gradient(135deg, #a855f7, #c084fc);
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+  }
+  .nav-links { display: flex; gap: 4px; }
+  .nav-links a {
+    color: var(--muted); text-decoration: none;
+    padding: 7px 14px; border-radius: 8px; font-size: 13px; font-weight: 500; transition: all 0.2s;
+  }
+  .nav-links a:hover, .nav-links a.active { background: rgba(124,58,237,0.15); color: #c084fc; }
+  .nav-right { display: flex; align-items: center; gap: 12px; }
+  .nav-user { font-size: 13px; color: var(--muted); background: var(--surface2); padding: 6px 14px; border-radius: 20px; border: 1px solid var(--border); }
+  .logout-btn { background: linear-gradient(135deg, var(--accent), #c0392b); color: #fff; padding: 7px 16px; border-radius: 8px; text-decoration: none; font-size: 13px; font-weight: 600; transition: all 0.2s; }
+  .logout-btn:hover { filter: brightness(1.15); transform: translateY(-1px); }
+
+  /* FLASH */
+  .flash-wrap { max-width: 1200px; margin: 20px auto 0; padding: 0 28px; }
+  .flash { padding: 13px 18px; border-radius: 10px; font-size: 13px; font-weight: 500; margin-bottom: 10px; }
+  .flash.success { background: rgba(5,150,105,0.15); color: #6ee7b7; border: 1px solid rgba(5,150,105,0.3); }
+  .flash.error   { background: rgba(233,69,96,0.15);  color: #fca5a5; border: 1px solid rgba(233,69,96,0.3); }
+
+  /* MAIN */
+  .container { max-width: 1200px; margin: 0 auto; padding: 32px 28px; }
+
+  .page-header { margin-bottom: 28px; }
+  .page-title { font-size: 26px; font-weight: 800; color: var(--text); letter-spacing: -0.5px; margin-bottom: 6px; }
+  .page-sub { font-size: 14px; color: var(--muted); }
+
+  /* INFO BANNER */
+  .info-banner {
+    background: linear-gradient(135deg, rgba(124,58,237,0.15), rgba(168,85,247,0.08));
+    border: 1px solid rgba(124,58,237,0.25);
+    border-radius: 12px;
+    padding: 13px 20px;
+    display: flex; align-items: center; gap: 10px;
+    font-size: 13px; color: #c4b5fd;
+    margin-bottom: 24px;
+  }
+
+  /* TABLE CARD */
+  .table-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    overflow: hidden;
+    box-shadow: 0 4px 30px rgba(0,0,0,0.3);
+  }
+  .table-card-header {
+    background: linear-gradient(135deg, rgba(124,58,237,0.25), rgba(168,85,247,0.15));
+    border-bottom: 1px solid var(--border);
+    padding: 18px 24px;
+    display: flex; align-items: center; justify-content: space-between;
+  }
+  .table-card-header h3 { font-size: 15px; font-weight: 700; color: #c4b5fd; }
+  .record-count { font-size: 12px; color: var(--muted); background: var(--surface2); padding: 4px 12px; border-radius: 20px; border: 1px solid var(--border); }
+
+  table { width: 100%; border-collapse: collapse; }
+  th {
+    background: var(--surface2);
+    padding: 12px 18px;
+    text-align: left;
+    font-size: 11px; font-weight: 700;
+    color: var(--muted);
+    text-transform: uppercase; letter-spacing: 0.7px;
+    border-bottom: 1px solid var(--border);
+  }
+  td {
+    padding: 14px 18px;
+    font-size: 14px; color: #cbd5e1;
+    border-bottom: 1px solid rgba(255,255,255,0.04);
+    transition: background 0.15s;
+  }
+  tr:last-child td { border-bottom: none; }
+  tr:hover td { background: rgba(124,58,237,0.06); }
+
+  /* BADGES */
+  .id-badge {
+    background: var(--surface2); border: 1px solid var(--border);
+    color: #94a3b8; padding: 3px 10px; border-radius: 6px;
+    font-size: 12px; font-family: monospace; font-weight: 600;
+  }
+  .course-badge {
+    background: rgba(59,130,246,0.15); color: #93c5fd;
+    border: 1px solid rgba(59,130,246,0.25);
+    padding: 3px 10px; border-radius: 6px; font-size: 12px; font-weight: 600;
+  }
+
+  /* GRADE BADGES */
+  .grade-badge {
+    display: inline-block; padding: 4px 12px; border-radius: 20px;
+    font-size: 12px; font-weight: 700;
+  }
+  .grade-A { background: rgba(5,150,105,0.2);  color: #6ee7b7; border: 1px solid rgba(5,150,105,0.3); }
+  .grade-B { background: rgba(59,130,246,0.2); color: #93c5fd; border: 1px solid rgba(59,130,246,0.3); }
+  .grade-C { background: rgba(245,158,11,0.2); color: #fcd34d; border: 1px solid rgba(245,158,11,0.3); }
+  .grade-D { background: rgba(249,115,22,0.2); color: #fdba74; border: 1px solid rgba(249,115,22,0.3); }
+  .grade-F { background: rgba(239,68,68,0.2);  color: #fca5a5; border: 1px solid rgba(239,68,68,0.3); }
+  .grade-NA { background: var(--surface2); color: var(--muted); border: 1px solid var(--border); }
+
+  /* GRADE FORM */
+  .grade-form { display: flex; align-items: center; gap: 8px; }
+  .grade-select {
+    padding: 7px 12px;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    color: var(--text);
+    font-size: 13px;
+    font-family: 'Outfit', sans-serif;
+    font-weight: 500;
+    outline: none;
+    cursor: pointer;
+    transition: border-color 0.2s;
+    appearance: none;
+    -webkit-appearance: none;
+    min-width: 80px;
+  }
+  .grade-select:focus { border-color: var(--purple); }
+  .grade-select option { background: #1a1b2e; }
+
+  .save-btn {
+    padding: 7px 16px;
+    background: linear-gradient(135deg, var(--purple), var(--purple-light));
+    color: #fff;
+    border: none;
+    border-radius: 8px;
+    font-size: 12px;
+    font-weight: 700;
+    cursor: pointer;
+    font-family: 'Outfit', sans-serif;
+    transition: all 0.2s;
+    letter-spacing: 0.3px;
+  }
+  .save-btn:hover { filter: brightness(1.15); transform: translateY(-1px); }
+
+  /* STUDENT NAME */
+  .student-name { font-weight: 600; color: var(--text); }
+  .course-name { font-size: 12px; color: var(--muted); margin-top: 2px; }
+
+  /* EMPTY */
+  .empty-state { text-align: center; padding: 60px 20px; color: var(--muted); }
+  .empty-state .icon { font-size: 42px; margin-bottom: 14px; }
+  .empty-state p { font-size: 15px; }
+
+  /* LEGEND */
+  .legend {
+    display: flex; gap: 10px; flex-wrap: wrap;
+    padding: 16px 24px;
+    border-top: 1px solid var(--border);
+    background: var(--surface2);
+  }
+  .legend-label { font-size: 11px; color: var(--muted); font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; align-self: center; margin-right: 4px; }
+</style>
+</head>
+<body>
+
+<nav>
+  <span class="nav-brand">🎓 {% if session['role'] == 'admin' %}Admin{% else %}Faculty{% endif %} Portal</span>
+  <div class="nav-links">
+    <a href="/dashboard">🏠 Home</a>
+    <a href="/students">👨‍🎓 Students</a>
+    <a href="/faculty/students" class="active">📝 Grades</a>
+    <a href="/attendance">📅 Attendance</a>
+    {% if session['role'] == 'admin' %}
+    <a href="/reports">📊 Reports</a>
+    {% endif %}
+  </div>
+  <div class="nav-right">
+    <span class="nav-user">👤 {{ session['user'] }} ({{ session['role'] }})</span>
+    <a href="/logout" class="logout-btn">🚪 Logout</a>
+  </div>
+</nav>
+
+{% with messages = get_flashed_messages(with_categories=true) %}
+  {% if messages %}
+  <div class="flash-wrap">
+    {% for cat, msg in messages %}
+      <div class="flash {{ cat }}">{{ msg }}</div>
+    {% endfor %}
+  </div>
+  {% endif %}
+{% endwith %}
+
+<div class="container">
+
+  <div class="page-header">
+    <div class="page-title">📝 Student Grades</div>
+    <div class="page-sub">
+      {% if session['role'] == 'faculty' %}
+        Showing students assigned to your faculty ID. You can update their grades below.
+      {% else %}
+        Showing all student enrollments. Admin has full grade update access.
+      {% endif %}
+    </div>
+  </div>
+
+  <div class="info-banner">
+    💡 Select a new grade from the dropdown and click <strong>Save</strong> to update. Changes reflect in the Oracle database immediately.
+  </div>
+
+  <div class="table-card">
+    <div class="table-card-header">
+      <h3>📋 Enrollment & Grade Records {% if session['role'] == 'faculty' %}— Your Students Only{% endif %}</h3>
+      <span class="record-count">{{ data|length }} records</span>
+    </div>
+
+    <table>
+      <thead>
+        <tr>
+          <th>Student ID</th>
+          <th>Student Name</th>
+          <th>Course</th>
+          <th>Current Grade</th>
+          <th>Update Grade</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for d in data %}
+        <tr>
+          <td><span class="id-badge">{{ d[0] }}</span></td>
+          <td>
+            <div class="student-name">{{ d[1] }}</div>
+          </td>
+          <td>
+            <span class="course-badge">{{ d[2] }}</span>
+            <div class="course-name">{{ d[3] }}</div>
+          </td>
+          <td>
+            {% if d[4] %}
+              <span class="grade-badge grade-{{ d[4] }}">{{ d[4] }}</span>
+            {% else %}
+              <span class="grade-badge grade-NA">N/A</span>
+            {% endif %}
+          </td>
+          <td>
+            <form method="POST" action="/faculty/update_grade" class="grade-form">
+              <input type="hidden" name="student_id"  value="{{ d[0] }}">
+              <input type="hidden" name="course_code" value="{{ d[2] }}">
+              <select name="grade" class="grade-select">
+                {% for g in ['A', 'B', 'C', 'D', 'F'] %}
+                  <option value="{{ g }}" {% if d[4] == g %}selected{% endif %}>{{ g }}</option>
+                {% endfor %}
+              </select>
+              <button type="submit" class="save-btn">💾 Save</button>
+            </form>
+          </td>
+        </tr>
+        {% else %}
+        <tr>
+          <td colspan="5">
+            <div class="empty-state">
+              <div class="icon">📭</div>
+              <p>No enrollment records found.</p>
+            </div>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+
+    <div class="legend">
+      <span class="legend-label">Grade Scale:</span>
+      <span class="grade-badge grade-A">A — Excellent</span>
+      <span class="grade-badge grade-B">B — Good</span>
+      <span class="grade-badge grade-C">C — Average</span>
+      <span class="grade-badge grade-D">D — Below Avg</span>
+      <span class="grade-badge grade-F">F — Fail</span>
+    </div>
+  </div>
+
+</div>
+</body>
+</html>

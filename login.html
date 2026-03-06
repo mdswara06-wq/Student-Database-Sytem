@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Student DB — Login</title>
+<style>
+  *{margin:0;padding:0;box-sizing:border-box}
+  body{font-family:'Segoe UI',sans-serif;min-height:100vh;background:#0a0e1a;display:flex;align-items:center;justify-content:center}
+  .bg{position:fixed;inset:0;z-index:0;background:radial-gradient(ellipse at 20% 50%,#0f3460 0%,transparent 50%),radial-gradient(ellipse at 80% 20%,#1a0533 0%,transparent 50%),#0a0e1a}
+  .wrapper{position:relative;z-index:1;width:100%;max-width:960px;padding:20px}
+  .header{text-align:center;margin-bottom:35px}
+  .header .logo{font-size:44px;display:block;margin-bottom:8px}
+  .header h1{font-size:28px;font-weight:800;color:#fff;letter-spacing:-1px}
+  .header h1 span{color:#e94560}
+  .header p{color:#667799;font-size:13px;margin-top:5px}
+  .portal-tabs{display:flex;justify-content:center;gap:10px;margin-bottom:28px}
+  .tab-btn{padding:9px 24px;border-radius:50px;border:2px solid #1e2d4a;background:transparent;color:#667799;font-size:13px;font-weight:500;cursor:pointer;transition:all .25s}
+  .tab-btn:hover{border-color:#4a6fa5;color:#aac4e0}
+  .tab-btn.active-admin{background:#0f3460;border-color:#0f3460;color:#fff}
+  .tab-btn.active-faculty{background:#7c3aed;border-color:#7c3aed;color:#fff}
+  .tab-btn.active-student{background:#059669;border-color:#059669;color:#fff}
+  .portal-form{display:none;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);border-radius:20px;padding:34px 38px;animation:fadeUp .3s ease}
+  .portal-form.active{display:block}
+  @keyframes fadeUp{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
+  .form-row{display:flex;gap:28px}
+  .form-col{flex:1}
+  .divider{width:1px;background:rgba(255,255,255,.08)}
+  .portal-badge{display:inline-flex;align-items:center;gap:7px;padding:5px 14px;border-radius:50px;font-size:11px;font-weight:600;letter-spacing:.5px;margin-bottom:20px;text-transform:uppercase}
+  .badge-admin{background:rgba(15,52,96,.5);color:#6fa3d9;border:1px solid #1e4a7a}
+  .badge-faculty{background:rgba(124,58,237,.2);color:#c4b5fd;border:1px solid #6d28d9}
+  .badge-student{background:rgba(5,150,105,.2);color:#6ee7b7;border:1px solid #065f46}
+  .form-title{font-size:22px;font-weight:800;color:#fff;margin-bottom:4px}
+  .form-sub{color:#667799;font-size:13px;margin-bottom:22px}
+  .field{margin-bottom:16px}
+  label{display:block;font-size:11px;font-weight:500;color:#667799;text-transform:uppercase;letter-spacing:.8px;margin-bottom:6px}
+  input[type=text],input[type=password]{width:100%;padding:12px 15px;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.1);border-radius:10px;color:#e0eaf5;font-size:14px;transition:border .2s,background .2s;outline:none}
+  input:focus{border-color:rgba(255,255,255,.3);background:rgba(255,255,255,.08)}
+  .btn-login{width:100%;padding:13px;border:none;border-radius:12px;font-size:15px;font-weight:700;cursor:pointer;transition:all .2s;letter-spacing:.5px;margin-top:5px}
+  .btn-admin{background:linear-gradient(135deg,#0f3460,#1a5fa8);color:#fff}
+  .btn-faculty{background:linear-gradient(135deg,#7c3aed,#a855f7);color:#fff}
+  .btn-student{background:linear-gradient(135deg,#059669,#10b981);color:#fff}
+  .btn-login:hover{transform:translateY(-2px);filter:brightness(1.1)}
+  .info-box{background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.07);border-radius:12px;padding:16px 18px}
+  .info-box h4{color:#667799;font-size:11px;text-transform:uppercase;letter-spacing:1px;margin-bottom:10px}
+  .cred-row{display:flex;align-items:center;gap:8px;margin-bottom:7px}
+  .cred-row:last-child{margin-bottom:0}
+  .cred-text{font-size:12px;color:#99b0cc}
+  .cred-text b{color:#c8d8ea}
+  .perms{display:flex;flex-wrap:wrap;gap:6px;margin-top:14px}
+  .perm-chip{padding:4px 10px;border-radius:20px;font-size:11px;font-weight:500}
+  .chip-green{background:rgba(5,150,105,.2);color:#6ee7b7}
+  .chip-yellow{background:rgba(245,158,11,.2);color:#fcd34d}
+  .chip-red{background:rgba(239,68,68,.2);color:#fca5a5}
+  .flash{background:rgba(233,69,96,.15);border:1px solid rgba(233,69,96,.3);color:#fca5a5;padding:12px 16px;border-radius:10px;font-size:13px;margin-bottom:18px;text-align:center}
+</style>
+</head>
+<body>
+<div class="bg"></div>
+<div class="wrapper">
+  <div class="header">
+    <span class="logo">🎓</span>
+    <h1>Student <span>Database</span> Management</h1>
+    <p>Select your portal to continue</p>
+  </div>
+
+  <div class="portal-tabs">
+    <button class="tab-btn active-admin"  onclick="switchPortal('admin')"   id="tab-admin">🔐 Admin Portal</button>
+    <button class="tab-btn"               onclick="switchPortal('faculty')" id="tab-faculty">👨‍🏫 Faculty Portal</button>
+    <button class="tab-btn"               onclick="switchPortal('student')" id="tab-student">👨‍🎓 Student Portal</button>
+  </div>
+
+  {% with messages = get_flashed_messages(with_categories=true) %}
+    {% for category, message in messages %}
+      <div class="flash">⚠ {{ message }}</div>
+    {% endfor %}
+  {% endwith %}
+
+  <!-- ADMIN -->
+  <div class="portal-form active" id="form-admin">
+    <div class="form-row">
+      <div class="form-col">
+        <div class="portal-badge badge-admin">🔐 Admin Portal</div>
+        <div class="form-title">Admin Login</div>
+        <div class="form-sub">Full system access — manage all records</div>
+        <form method="POST">
+          <input type="hidden" name="portal" value="admin">
+          <div class="field"><label>Username</label><input type="text" name="username" placeholder="admin" required></div>
+          <div class="field"><label>Password</label><input type="password" name="password" placeholder="••••••••" required></div>
+          <button class="btn-login btn-admin" type="submit">Login as Admin →</button>
+        </form>
+      </div>
+      <div class="divider"></div>
+      <div class="form-col">
+        <div class="info-box">
+          <h4>Admin Credentials</h4>
+          <div class="cred-row"><span>👤</span><span class="cred-text">Username: <b>admin</b></span></div>
+          <div class="cred-row"><span>🔑</span><span class="cred-text">Password: <b>admin123</b></span></div>
+        </div>
+        <div class="perms">
+          <span class="perm-chip chip-green">✓ Add / Edit / Delete</span>
+          <span class="perm-chip chip-green">✓ View All Reports</span>
+          <span class="perm-chip chip-green">✓ Upload Photos</span>
+          <span class="perm-chip chip-green">✓ Manage Enrollments</span>
+          <span class="perm-chip chip-green">✓ Mark Attendance</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- FACULTY -->
+  <div class="portal-form" id="form-faculty">
+    <div class="form-row">
+      <div class="form-col">
+        <div class="portal-badge badge-faculty">👨‍🏫 Faculty Portal</div>
+        <div class="form-title">Faculty Login</div>
+        <div class="form-sub">View student info, update grades and attendance</div>
+        <form method="POST">
+          <input type="hidden" name="portal" value="faculty">
+          <div class="field"><label>Username</label><input type="text" name="username" placeholder="e.g. bindu/deepa/bejoy" required></div>
+          <div class="field"><label>Password</label><input type="password" name="password" placeholder="••••••••" required></div>
+          <button class="btn-login btn-faculty" type="submit">Login as Faculty →</button>
+        </form>
+      </div>
+      <div class="divider"></div>
+      <div class="form-col">
+        <div class="info-box">
+          <h4>Faculty Credentials</h4>
+          <div class="cred-row"><span>👤</span><span class="cred-text">Username: <b>bindu/deepa / bejoy / tephila</b></span></div>
+          <div class="cred-row"><span>🔑</span><span class="cred-text">Password: <b>faculty123</b></span></div>
+        </div>
+        <div class="perms">
+          <span class="perm-chip chip-green">✓ View All Students</span>
+          <span class="perm-chip chip-green">✓ View All Grades</span>
+          <span class="perm-chip chip-green">✓ Mark Attendance</span>
+          <span class="perm-chip chip-yellow">~ Update Grades Only</span>
+          <span class="perm-chip chip-red">✗ Cannot Delete / Add</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- STUDENT -->
+  <div class="portal-form" id="form-student">
+    <div class="form-row">
+      <div class="form-col">
+        <div class="portal-badge badge-student">👨‍🎓 Student Portal</div>
+        <div class="form-title">Student Login</div>
+        <div class="form-sub">View your personal information, grades and attendance</div>
+        <form method="POST">
+          <input type="hidden" name="portal" value="student">
+          <div class="field"><label>Username</label><input type="text" name="username" placeholder="e.g. arjun" required></div>
+          <div class="field"><label>Password</label><input type="password" name="password" placeholder="••••••••" required></div>
+          <button class="btn-login btn-student" type="submit">Login as Student →</button>
+        </form>
+      </div>
+      <div class="divider"></div>
+      <div class="form-col">
+        <div class="info-box">
+          <h4>Student Credentials</h4>
+          <div class="cred-row"><span>👤</span><span class="cred-text">Username: <b>arjun / priya / rohit</b></span></div>
+          <div class="cred-row"><span>🔑</span><span class="cred-text">Password: <b>student123</b></span></div>
+        </div>
+        <div class="perms">
+          <span class="perm-chip chip-green">✓ View Own Profile</span>
+          <span class="perm-chip chip-green">✓ View Own Grades</span>
+          <span class="perm-chip chip-green">✓ View Own Attendance</span>
+          <span class="perm-chip chip-red">✗ View Only — No Edits</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+function switchPortal(p){
+  document.querySelectorAll('.portal-form').forEach(f=>f.classList.remove('active'));
+  document.querySelectorAll('.tab-btn').forEach(b=>b.className='tab-btn');
+  document.getElementById('form-'+p).classList.add('active');
+  document.getElementById('tab-'+p).classList.add('active-'+p);
+}
+</script>
+</body>
+</html>
